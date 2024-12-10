@@ -1,134 +1,89 @@
 <?php
-
 session_start();
-
 // Require file Common
-require_once '../commons/env.php'; // Khai báo biến môi trường
-require_once '../commons/function.php'; // Hàm hỗ trợ
-
+require_once './commons/env.php'; // Khai báo biến môi trường
+require_once './commons/function.php'; // Hàm hỗ trợ
 
 // Require toàn bộ file Controllers
-require_once './controllers/AdminDanhMucController.php';
-require_once './controllers/AdminSanPhamController.php';
-require_once './controllers/AdminDonHangController.php';
-require_once './controllers/AdminBaoCaoThongKeController.php';
-require_once './controllers/AdminTaiKhoanController.php';
-require_once 'controllers/AdminLienHeController.php';
-require_once './controllers/AdminTrangThaiDonHangController.php'; // Thêm controller cho trạng thái đơn hàng
-require_once './controllers/AdminBinhLuanController.php';
-
+require_once './controllers/HomeController.php';
+require_once './controllers/TaiKhoanController.php';
+require_once './controllers/LienHeController.php';
+require_once './controllers/SanPhamController.php';
+require_once './controllers/DonHangController.php';
+require_once './controllers/TinTucController.php';
 
 // Require toàn bộ file Models
-require_once './models/AdminDanhMuc.php';
-require_once './models/AdminSanPham.php';
-require_once './models/AdminDonHang.php';
-require_once './models/AdminTaiKhoan.php';
-require_once './models/AdminLienHe.php';
-require_once './models/AdminTrangThaiDonHang.php'; // Thêm model cho trạng thái đơn hàng
-require_once './models/AdminBinhLuan.php';
+require_once './models/SanPham.php';
+require_once './models/TaiKhoan.php';
+require_once './models/GioHang.php';
+require_once './models/LienHe.php';
+require_once './models/DonHang.php';
+require_once './models/TinTuc.php';
+
 
 // Route
 $act = $_GET['act'] ?? '/';
-
-if ($act !== 'check-log-admin' && $act !== 'logout-admin') {
-    checkLoginAdmin();
-}
+// var_dump($_GET['act']);die();
 
 // Để bảo bảo tính chất chỉ gọi 1 hàm Controller để xử lý request thì mình sử dụng match
 
 match ($act) {
+    // Trang chủ
+    '/' => (new HomeController())->home(),
+    // Trường hợp đặc biệt
+//route trang thai binh luan
+// 'update-trang-thai-binh-luan' => (new SanPhamController())->updateTrangThaiBinhLuan(),
+ // sản phẩm
+ 'chi-tiet-san-pham' => (new HomeController())->chiTietSanPham(),
+ 'danh-sach-san-pham' => (new HomeController())->danhSachSanPham(),
 
-    // rou báo cáo thống kê
-    '/' => (new AdminBaoCaoThongKeController())->home(),
+    
+    // Base URL/?act=dnah-sach-san-pham
+    'them-gio-hang' => (new HomeController())->addGioHang(),
+    'gio-hang' => (new HomeController())->gioHang(),
+    'thanh-toan' =>(new HomeController())->thanhToan(),
+    'post-thanh-toan' =>(new HomeController())->postThanhToan(),
+    
+    // 'xoa-san-pham-gio-hang' 
 
-
-    'danh-muc' => (new AdminDanhMucController())->danhSachDanhMuc(),
-    'form-them-danh-muc' => (new AdminDanhMucController())->formAddDanhMuc(),
-    'them-danh-muc' => (new AdminDanhMucController())->postAddDanhMuc(),
-    'form-sua-danh-muc' => (new AdminDanhMucController())->formEditDanhMuc(),
-    'sua-danh-muc' => (new AdminDanhMucController())->postEditDanhMuc(),
-    'xoa-danh-muc' => (new AdminDanhMucController())->deleteDanhMuc(),
-
-    // rou sản phẩm
-    'san-pham' => (new AdminSanPhamController())->danhSachSanPham(),
-    'form-them-san-pham' => (new AdminSanPhamController())->formAddSanPham(),
-    'them-san-pham' => (new AdminSanPhamController())->postAddSanPham(),
-    'form-sua-san-pham' => (new AdminSanPhamController())->formEditAddSanPham(),
-    'sua-san-pham' => (new AdminSanPhamController())->postEditAddSanPham(),
-    'sua-album-san-pham' => (new AdminSanPhamController())->postEditAnhSanPham(),
-    'xoa-san-pham' => (new AdminSanPhamController())->deleteSanPham(),
-    'chi-tiet-san-pham' => (new AdminSanPhamController())->getDetailSanPham(),
-
-    // Bình luận
-    'update-trang-thai-binh-luan' => (new AdminSanPhamController())->updateTrangThaiBinhLuan(),
-    'updata-trang-thai-binh-luan' => (new AdminBinhLuanController())->updataTrangThaiBinhLuan(),
-    'binh-luan' => (new AdminBinhLuanController())->danhSachBinhLuan(),
-    'delete-binh-luan' => (new AdminBinhLuanController())->xoaBinhLuan(),
-
-
-    // rou Đơn hàng
-    'don-hang' => (new AdminDonHangController())->danhSachDonHang(),
-    'form-sua-don-hang' => (new AdminDonHangController())->formEditDonHang(),
-    'sua-don-hang' => (new AdminDonHangController())->postEditDonHang(),
-    'chi-tiet-don-hang' => (new AdminDonHangController())->detailDonHang(),
-
-    // rou Đơn hàng quản lý tài khoản
-    // Tài khoản quản trị
-    'list-tai-khoan-quan-tri' => (new AdminTaiKhoanController())->danhSachQuanTri(),
-    'form-them-quan-tri' => (new AdminTaiKhoanController())->formAddQuanTri(),
-    'them-quan-tri' => (new AdminTaiKhoanController())->postAddQuanTri(),
-    'form-sua-quan-tri' => (new AdminTaiKhoanController())->formEditQuanTri(),
-    'sua-quan-tri' => (new AdminTaiKhoanController())->postEditQuanTri(),
-
-    // reset pass
-    'reset-password' => (new AdminTaiKhoanController())->resetPassword(),
-    'reset-matkhau' => (new AdminTaiKhoanController())->resetMatkhau(),
-
-    // Quản lý tài khoản khách hàng 
-    'list-tai-khoan-khach-hang' => (new AdminTaiKhoanController())->danhSachKhachHang(),
-    'form-sua-khach-hang' => (new AdminTaiKhoanController())->formEditKhachHang(),
-    'sua-khach-hang' => (new AdminTaiKhoanController())->postEditKhachHang(),
-    'chi-tiet-khach-hang' => (new AdminTaiKhoanController())->deltailKhachHang(),
-
-    // QUản lý tài khoản cá nhân(quản trị)
-    'form-sua-thong-tin-ca-nhan-quan-tri' => (new AdminTaiKhoanController())->formEditCaNhanQuanTri(),
-    'sua-thong-tin-ca-nhan-quan-tri' => (new AdminTaiKhoanController())->postEditCaNhanQuanTri(),
-
-    'sua-mat-khau-ca-nhan-quan-tri' => (new AdminTaiKhoanController())->postEditMatKhauCaNhan(),
+    // +
+    'login' => (new HomeController())->formLogin(),
+    'check-login' => (new HomeController())->postLogin(),
+    'logout' => (new HomeController())->Logout(),
+    'dangky' => (new HomeController())->formAddDangky(),
+    'check-dangky' => (new HomeController())->postAddDangKy(),
+    //
+    'update-gio-hang' => (new HomeController())->updateGioHang(),
 
 
-    // auth
-    'login-admin' => (new AdminTaiKhoanController)->formLogin(),
-    'check-log-admin' => (new AdminTaiKhoanController)->login(),
-    'logout-admin' => (new AdminTaiKhoanController)->logout(),
+   
+
+//tin tuc
 
 
+    'list-tai-khoan' => (new TaiKhoanController())->danhSach(),
+    'form-them' => (new TaiKhoanController())->formAdd(),
+    'them' => (new TaiKhoanController())->postAdd(),
+//
+'form-them-lien-he' => (new LienHeController())->formAdd(), // Hiển thị form thêm liên hệ
+'them-lien-he' => (new LienHeController())->postAdd(),      // Xử lý thêm liên hệ
 
-    // 'lien-he' => (new AdminLienHeController())->danhSachLienHe(),
+//search
+'search' => (new SanPhamController())->searchSanPham(),
+//
+'don-hang' => (new DonHangController())->donHang(),
+'chi-tiet-don-hang' => (new DonHangController())->chiTietDonHang(),
+//xoa san pham gio hang
+'xoa-san-pham-gio-hang'  =>(new HomeController()) ->xoaSanPhamGioHang(),
+//
+'huy-don-hang' =>(new DonHangController())->huyDonHang(),
+'da-nhan-don-hang' => (new DonHangController())->daNhanDonHang(),
 
-    // Route cho Trạng thái Đơn Hàng
-    'trang-thai-don-hang' => (new AdminTrangThaiDonHangController())->danhSachTrangThai(),
-    'form-cap-nhat-trang-thai' => (new AdminTrangThaiDonHangController())->formSuaTrangThai(),
-    'cap-nhat-trang-thai' => (new AdminTrangThaiDonHangController())->postSuaTrangThai(),
-    'xoa-trang-thai' => (new AdminTrangThaiDonHangController())->xoaTrangThai(),
-    'form-them-trang-thai' => (new AdminTrangThaiDonHangController())->formThemTrangThai(),
-    'them-trang-thai' => (new AdminTrangThaiDonHangController())->themTrangThai(), // Thêm route mới cho themTrangThai
-
-    // Route quản lý bình luận
-// 'binh-luan' => (new AdminBinhLuanController())->danhSachBinhLuan(),
-// // 'update-trang-thai-binh-luan' => (new AdminBinhLuanController())->updateTrangThaiBinhLuan(),
-// 'xoa-binh-luan' => (new AdminBinhLuanController())->deleteBinhLuan(),
+//
+'danh-sach-tin-tuc' => (new TinTucController())->danhSachTinTuc(),
+'chi-tiet-tin-tuc' => (new TinTucController())->detailTinTuc(),
 
 
-    'trang-thai-thanh-toan' => (new AdminTrangThaiThanhToanController())->danhSachTrangThaiThanhToan(),
-// 'form-cap-nhat-trang-thai-thanh-toan' => (new AdminTrangThaiDonHangController())->formSuaTrangThaiThanhToan(),
-// 'cap-nhat-trang-thai-thanh-toan' => (new AdminTrangThaiDonHangController())->postSuaTrangThaiThanhToan(),
-// 'xoa-trang-thai-thanh-toan' => (new AdminTrangThaiDonHangController())->xoaTrangThaiThanhToan(),
-// 'form-them-trang-thai-thanh-toan' => (new AdminTrangThaiDonHangController())->formThemTrangThaiThanhToan(),
-// 'them-trang-thai-thanh-toan' => (new AdminTrangThaiDonHangController())->themTrangThaiThanhToan(), 
-// Routes cho Liên hệ
-// Routes cho liên hệ
-'lien-he' => (new AdminLienHeController())->danhSachLienHe(),
 
 
 
